@@ -18,16 +18,15 @@ let auth = function(req, res, next) {
 
 let log = function(req, res, next) {
     let date = new Date;
-    let actualDate = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+    let actualDate = formatDate(date);
     let fileName = `/${actualDate}.log`;
-    let content = `${req.ip}, ${actualDate} ${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}, ${req.method}, ${req.path} `;
+    let content = `${req.ip}, ${actualDate} ${date.toTimeString().split(' ')[0]}, ${req.method}, ${req.path} `;
 
     fs.appendFile(__dirname + '/logs' + fileName, content, err => {
         if (err) {
           console.error(err)
           return
         }
-        //done!
       })
     
     next();
@@ -41,10 +40,24 @@ app.post('/', log, function(req, res){
     res.sendFile(__dirname + '/src/views/home.html')
 })
 
-app.get('/contacto', log, function(req, res){
+app.get('/contacto', log, auth, function(req, res){
     res.sendFile(__dirname + '/src/views/home.html')
   })
 
+
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
 
 
 app.listen(3000)
